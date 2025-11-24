@@ -4,8 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 from app.core.config import settings
 
-# SQLAlchemy setup
-engine = create_async_engine(settings.POSTGRES_URL, echo=True)
+# SQLAlchemy setup with optimized connection pooling
+engine = create_async_engine(
+    settings.POSTGRES_URL,
+    echo=False,
+    pool_size=50,
+    max_overflow=20,
+    pool_recycle=3600,
+    pool_timeout=30,
+    pool_pre_ping=True,
+    connect_args={
+        "server_settings": {"jit": "off"},
+        "command_timeout": 60,
+        "prepared_statement_cache_size": 500
+    }
+)
 AsyncSessionLocal = async_sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
@@ -26,8 +39,10 @@ async def init_pg_pool():
     global pg_pool
     pg_pool = await asyncpg.create_pool(
         settings.ONBOARDING_POSTGRES_URL,
-        min_size=5,
-        max_size=20
+        min_size=10,
+        max_size=50,
+        max_inactive_connection_lifetime=300,
+        command_timeout=60
     )
 
 
