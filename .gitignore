@@ -119,3 +119,4 @@ docs/_build/
 *.~*
 # Large installers
 v0/installer_action_files/
+v0/tests/test.ipynb

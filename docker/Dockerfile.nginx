@@ -1,0 +1,19 @@
+FROM nginx:alpine
+
+# Copy custom nginx configuration
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+
+# Create directories for SSL and cache
+RUN mkdir -p /etc/nginx/ssl /var/cache/nginx /app/images
+
+# Copy SSL certificates (placeholder - use cert-manager in K8s)
+# COPY ssl/fullchain.pem /etc/nginx/ssl/
+# COPY ssl/privkey.pem /etc/nginx/ssl/
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
+
+EXPOSE 80 443
+
+CMD ["nginx", "-g", "daemon off;"]
