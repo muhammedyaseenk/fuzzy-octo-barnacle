@@ -1,0 +1,45 @@
+# FastAPI and ASGI
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Caching
+redis==5.0.1
+
+# Storage & Images
+minio==7.2.0
+Pillow==10.1.0
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Validation & Settings
+pydantic[email]==2.5.0
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# MFA
+pyotp==2.9.0
+qrcode[pil]==7.4.2
+
+# Celery & RabbitMQ
+celery[redis]==5.3.4
+kombu==5.3.4
+
+# Development
+python-dotenv==1.0.0
+
+# Monitoring
+prometheus-client==0.19.0
+
+# HTTP Client
+httpx==0.25.2

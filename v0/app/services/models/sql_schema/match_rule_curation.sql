@@ -1,0 +1,21 @@
+-- / Specific rule curation /
++-- =================================
+-- rules are follows:
+-- | Table            | Description                        | Key Fields                                         |
+-- | ---------------- | ---------------------------------- | -------------------------------------------------- |
+-- | `states`         | Indian states                      | `state_id(PK)`, `state_name`                       |
+-- | `districts`      | Districts (e.g., Kerala districts) | `district_id(PK)`, `state_id(FK)`, `district_name` |
+-- | `cities`         | Cities & towns                     | `city_id(PK)`, `district_id(FK)`, `city_name`      |
+-- | `religions`      | Religion list                      | `religion_id(PK)`, `religion_name`                 |
+-- | `castes`         | Caste list                         | `caste_id(PK)`, `religion_id(FK)`, `caste_name`    |
+-- | `mother_tongues` | Languages                          | `mother_tongue_id(PK)`, `language_name`            |
+-- -- =================================
+-- | Table              | Description                    | Key Fields                                                                                                                                                  |
+-- | ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-- | `users`            | Basic login/auth info          | `user_id(PK)`, `email`, `phone`, `password_hash`, `is_active`, `created_at`, `updated_at`                                                                   |
+-- | `user_profile`     | Personal & demographic details | `user_id(FK)`, `first_name`, `last_name`, `dob`, `gender`, `marital_status`, `religion_id`, `caste_id`, `mother_tongue_id`, `height`, `weight`, `photo_url` |
+-- | `user_family`      | Family background              | `user_id(FK)`, `father_name`, `mother_name`, `siblings`, `family_location`, `family_status`                                                                 |
+-- | `user_education`   | Educational info               | `user_id(FK)`, `highest_degree`, `university`, `graduation_year`                                                                                            |
+-- | `user_profession`  | Job & income                   | `user_id(FK)`, `occupation`, `company_name`, `annual_income`                                                                                                |
+-- | `user_preferences` | Partner preferences            | `user_id(FK)`, `preferred_age_min`, `preferred_age_max`, `preferred_height_min`, `preferred_height_max`, `preferred_religion`, `preferred_caste`            |
+-- | `user_photos`      | Multiple photos                | `photo_id(PK)`, `user_id(FK)`, `photo_url`, `is_primary`, `uploaded_at`                                                                                     |

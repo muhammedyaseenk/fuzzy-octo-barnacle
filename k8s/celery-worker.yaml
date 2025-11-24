@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: aurum-matrimony
+  labels:
+    app: celery-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: aurum-matrimony-api:latest
+        command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
+        env:
+        - name: ENV
+          value: "production"
+        - name: POSTGRES_URL
+          value: "postgresql+asyncpg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres-service:5432/$(POSTGRES_DB)"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: POSTGRES_DB
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: REDIS_HOST
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: REDIS_PASSWORD
+        - name: RABBITMQ_URL
+          value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASSWORD)@rabbitmq-service:5672/"
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_USER
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_PASSWORD
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: aurum-matrimony
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: aurum-matrimony-api:latest
+        command: ["celery", "-A", "app.celery_app", "beat", "--loglevel=info"]
+        env:
+        - name: ENV
+          value: "production"
+        - name: RABBITMQ_URL
+          value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASSWORD)@rabbitmq-service:5672/"
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_USER
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_PASSWORD
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

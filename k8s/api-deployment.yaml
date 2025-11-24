@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aurum-api
+  namespace: aurum-matrimony
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aurum-api
+  template:
+    metadata:
+      labels:
+        app: aurum-api
+    spec:
+      containers:
+      - name: api
+        image: aurum-matrimony-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: ENV
+        - name: POSTGRES_URL
+          value: "postgresql+asyncpg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres-service:5432/$(POSTGRES_DB)"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: POSTGRES_DB
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: REDIS_HOST
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: REDIS_PASSWORD
+        - name: MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: aurum-config
+              key: MINIO_ENDPOINT
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: MINIO_ROOT_USER
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: MINIO_ROOT_PASSWORD
+        - name: RABBITMQ_URL
+          value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASSWORD)@rabbitmq-service:5672/"
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_USER
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: RABBITMQ_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aurum-secrets
+              key: SECRET_KEY
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aurum-api-service
+  namespace: aurum-matrimony
+spec:
+  selector:
+    app: aurum-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer

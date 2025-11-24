@@ -1,0 +1,23 @@
+// Authentication Flow
+digraph {
+	A [label=User]
+	B [label="Register Endpoint"]
+	C [label="Database (Users Table)"]
+	D [label="Generate MFA Secret & QR"]
+	E [label="Login Endpoint"]
+	F [label="Verify Password & MFA"]
+	G [label="JWT Generation"]
+	H [label="Access Token"]
+	I [label="Refresh Token"]
+	J [label="Audit Log"]
+	A -> B [label="submits email/password"]
+	B -> C [label="store hashed password & user"]
+	C -> D [label="optional: generate MFA secret & QR"]
+	A -> E [label="submits login credentials"]
+	E -> F [label="validate credentials"]
+	F -> G [label="if MFA valid"]
+	G -> H [label="access token issued"]
+	G -> I [label="refresh token issued"]
+	H -> J [label="log login event"]
+	I -> J [label="log refresh token event"]
+}

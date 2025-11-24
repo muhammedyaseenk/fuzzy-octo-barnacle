@@ -1,0 +1,41 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: celery-worker-scaler
+  namespace: aurum-matrimony
+spec:
+  scaleTargetRef:
+    name: celery-worker
+  pollingInterval: 30
+  cooldownPeriod: 300
+  minReplicaCount: 2
+  maxReplicaCount: 20
+  triggers:
+  - type: rabbitmq
+    metadata:
+      protocol: amqp
+      queueName: celery
+      mode: QueueLength
+      value: "10"
+      host: amqp://aurum_user:changeme_rabbitmq_password@rabbitmq-service.aurum-matrimony.svc.cluster.local:5672/
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: celery-notification-scaler
+  namespace: aurum-matrimony
+spec:
+  scaleTargetRef:
+    name: celery-worker
+  pollingInterval: 15
+  cooldownPeriod: 180
+  minReplicaCount: 1
+  maxReplicaCount: 15
+  triggers:
+  - type: rabbitmq
+    metadata:
+      protocol: amqp
+      queueName: notifications
+      mode: QueueLength
+      value: "20"
+      host: amqp://aurum_user:changeme_rabbitmq_password@rabbitmq-service.aurum-matrimony.svc.cluster.local:5672/

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aurum-matrimony
+  labels:
+    name: aurum-matrimony
+    environment: production

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aurum-config
+  namespace: aurum-matrimony
+data:
+  ENV: "production"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "aurum_db"
+  MINIO_ENDPOINT: "minio-service:9000"
+  MINIO_BUCKET: "profile-images"
+  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_PORT: "5672"

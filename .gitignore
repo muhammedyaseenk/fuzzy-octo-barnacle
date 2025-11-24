@@ -1,0 +1,119 @@
+########################################
+# PYTHON CACHE & BUILD FILES
+########################################
+
+# Ignore ALL Python cache folders (covers any depth)
+**/__pycache__/
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore distribution/build folders
+dist/
+build/
+*.egg-info/
+
+########################################
+# ENVIRONMENTS
+########################################
+
+# Virtual environments
+aurum_env/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+########################################
+# DATABASE FILES
+########################################
+
+*.db
+*.sqlite3
+
+########################################
+# LOG FILES
+########################################
+
+*.log
+
+########################################
+# IDE & EDITOR FILES
+########################################
+
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+########################################
+# OS GENERATED FILES
+########################################
+
+.DS_Store
+Thumbs.db
+
+########################################
+# JUPYTER NOTEBOOK
+########################################
+
+.ipynb_checkpoints/
+
+########################################
+# TESTING & COVERAGE
+########################################
+
+htmlcov/
+.coverage
+.coverage.*
+.junit.xml
+.nosetests.xml
+.pytest_cache/
+test_results/
+
+########################################
+# MYPY & OTHER LINTERS
+########################################
+
+.mypy_cache/
+
+########################################
+# ENVIRONMENT/DEPENDENCY MANAGERS
+########################################
+
+Pipfile.lock
+poetry.lock
+.tox/
+
+########################################
+# DJANGO / FLASK SPECIFIC
+########################################
+
+# Django static and media
+staticfiles/
+media/
+
+# Celery
+celerybeat-schedule
+
+########################################
+# DOCUMENTATION (SPHINX)
+########################################
+
+docs/_build/
+
+########################################
+# TEMPORARY & BACKUP FILES
+########################################
+
+*.tmp
+*.temp
+*~.bak
+*.swp
+*.swo
+*.~*
