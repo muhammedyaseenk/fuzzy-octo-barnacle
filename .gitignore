@@ -117,3 +117,5 @@ docs/_build/
 *.swp
 *.swo
 *.~*
+# Large installers
+v0/installer_action_files/
