@@ -339,3 +339,8 @@ async def _cleanup_old_notifications_async():
         
         deleted_count = int(result.split()[-1]) if result else 0
         return {"status": "cleaned", "deleted_count": deleted_count}
+
+
+# Wrapper functions for backward compatibility
+send_push_notification = send_push_notification_task
+send_email_notification = send_email_notification_task
