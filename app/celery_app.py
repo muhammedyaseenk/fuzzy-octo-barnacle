@@ -11,7 +11,8 @@ celery_app = Celery(
         "app.tasks.notifications",
         "app.tasks.matching",
         "app.tasks.media",
-        "app.tasks.analytics"
+        "app.tasks.analytics",
+        "app.tasks.engagement"
     ]
 )
 
@@ -42,5 +43,21 @@ celery_app.conf.beat_schedule = {
     "generate-analytics": {
         "task": "app.tasks.analytics.generate_daily_analytics",
         "schedule": 60.0 * 60.0 * 6.0,  # Every 6 hours
+    },
+    "notify-new-users": {
+        "task": "notify_new_users_joined",
+        "schedule": 60.0 * 60.0 * 24.0,  # Daily at midnight
+    },
+    "process-engagement-events": {
+        "task": "process_engagement_events",
+        "schedule": 60.0,  # Every minute
+    },
+    "send-inactive-reminders": {
+        "task": "send_inactive_user_reminders",
+        "schedule": 60.0 * 60.0 * 24.0,  # Daily
+    },
+    "profile-completion-reminders": {
+        "task": "send_profile_completion_reminders",
+        "schedule": 60.0 * 60.0 * 12.0,  # Twice daily
     },
 }

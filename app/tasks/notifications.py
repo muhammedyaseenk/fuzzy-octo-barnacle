@@ -10,15 +10,26 @@ from app.core.db import get_pg_connection
 
 
 @celery_app.task(bind=True, retry_backoff=True, max_retries=3, rate_limit='100/m')
-def send_push_notification(self, user_id: int, title: str, message: str, data: dict = None):
-    """Send push notification via FCM/APNs"""
+def send_push_notification_task(self, user_id: int, title: str, message: str, data: dict = None):
+    """Send push notification via FCM with graceful error handling"""
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     
-    return loop.run_until_complete(_send_push_notification_async(user_id, title, message, data))
+    return loop.run_until_complete(_send_push_graceful(user_id, title, message, data))
+
+async def _send_push_graceful(user_id: int, title: str, message: str, data: dict = None):
+    """Send push with graceful error handling"""
+    from app.core.notification_handler import notification_handler
+    
+    try:
+        result = await notification_handler.send_push(user_id, title, message, data)
+        return result
+    except Exception as e:
+        # Gracefully handle - don't raise, just log
+        return {"status": "failed", "user_id": user_id, "error": str(e)}
 
 
 async def _send_push_notification_async(user_id: int, title: str, message: str, data: dict = None):
@@ -93,15 +104,25 @@ async def _send_push_notification_async(user_id: int, title: str, message: str, 
 
 
 @celery_app.task(bind=True, retry_backoff=True, max_retries=3, rate_limit='50/m')
-def send_email_notification(self, user_id: int, template: str, data: dict):
-    """Send email notification via SES/SendGrid"""
+def send_email_notification_task(self, user_id: int, template: str, data: dict):
+    """Send email notification with graceful error handling"""
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     
-    return loop.run_until_complete(_send_email_notification_async(user_id, template, data))
+    return loop.run_until_complete(_send_email_graceful(user_id, template, data))
+
+async def _send_email_graceful(user_id: int, template: str, data: dict):
+    """Send email with graceful error handling"""
+    from app.core.notification_handler import notification_handler
+    
+    try:
+        result = await notification_handler.send_email(user_id, template, data)
+        return result
+    except Exception as e:
+        return {"status": "failed", "user_id": user_id, "error": str(e)}
 
 
 async def _send_email_notification_async(user_id: int, template: str, data: dict):
@@ -206,32 +227,25 @@ def _render_daily_matches_email(first_name: str, matches: List[Dict]) -> str:
 
 
 @celery_app.task(bind=True, retry_backoff=True, max_retries=3, rate_limit='100/m')
-def send_sms_notification(self, phone: str, message: str):
-    """Send SMS notification via Twilio/AWS SNS"""
+def send_sms_notification_task(self, phone: str, message: str):
+    """Send SMS notification with graceful error handling"""
     try:
-        # Twilio implementation (placeholder)
-        # from twilio.rest import Client
-        # client = Client(account_sid, auth_token)
-        # message = client.messages.create(
-        #     body=message,
-        #     from_='+1234567890',
-        #     to=phone
-        # )
-        
-        # AWS SNS implementation (placeholder)
-        # import boto3
-        # sns = boto3.client('sns', region_name='us-east-1')
-        # response = sns.publish(
-        #     PhoneNumber=phone,
-        #     Message=message
-        # )
-        
-        print(f"SMS sent to {phone}: {message}")
-        return {"status": "sent", "phone": phone}
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     
-    except Exception as exc:
-        print(f"SMS error for {phone}: {exc}")
-        raise self.retry(exc=exc, countdown=60)
+    return loop.run_until_complete(_send_sms_graceful(phone, message))
+
+async def _send_sms_graceful(phone: str, message: str):
+    """Send SMS with graceful error handling"""
+    from app.core.notification_handler import notification_handler
+    
+    try:
+        result = await notification_handler.send_sms(phone, message)
+        return result
+    except Exception as e:
+        return {"status": "failed", "phone": phone, "error": str(e)}
 
 
 @celery_app.task(rate_limit='10/m')
@@ -277,7 +291,7 @@ async def _create_notification_async(user_id: int, notification_type: str, title
     notification_id = await NotificationService.create_notification(notification)
     
     # Also send push notification if user has devices
-    send_push_notification.apply_async(
+    send_push_notification_task.apply_async(
         args=[user_id, title, message, data],
         countdown=2
     )
@@ -295,10 +309,10 @@ def send_bulk_notification(user_ids: List[int], title: str, message: str, channe
             create_notification.apply_async(args=[user_id, 'system', title, message])
         
         if 'push' in channels:
-            send_push_notification.apply_async(args=[user_id, title, message], countdown=5)
+            send_push_notification_task.apply_async(args=[user_id, title, message], countdown=5)
         
         if 'email' in channels:
-            send_email_notification.apply_async(args=[user_id, 'general', {'message': message}], countdown=10)
+            send_email_notification_task.apply_async(args=[user_id, 'general', {'message': message}], countdown=10)
     
     return {"status": "queued", "users": len(user_ids), "channels": channels}
 

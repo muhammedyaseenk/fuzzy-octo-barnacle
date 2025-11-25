@@ -19,6 +19,9 @@ from app.domains.profiles import api as profiles_api
 from app.domains.moderation import api as moderation_api
 from app.domains.matching import api as matching_api
 from app.domains.matching import api_optimized as matching_optimized_api
+from app.domains.engagement import api as engagement_api
+from app.domains.admin import api as admin_api
+from app.domains.whatsapp import api as whatsapp_api
 from app.domains.chat import api_http as chat_http_api, api_ws as chat_ws_api
 from app.domains.calls import api_ws as calls_ws_api
 from app.domains.media import api as media_api
@@ -75,6 +78,9 @@ app.include_router(profiles_api.router, prefix="/api/v1")
 app.include_router(moderation_api.router, prefix="/api/v1")
 app.include_router(matching_api.router, prefix="/api/v1")
 app.include_router(matching_optimized_api.router)
+app.include_router(engagement_api.router, prefix="/api/v1")
+app.include_router(admin_api.router, prefix="/api/v1")
+app.include_router(whatsapp_api.router, prefix="/api/v1")
 app.include_router(media_api.router, prefix="/api/v1")
 app.include_router(notifications_api.router, prefix="/api/v1")
 app.include_router(chat_http_api.router, prefix="/api/v1")

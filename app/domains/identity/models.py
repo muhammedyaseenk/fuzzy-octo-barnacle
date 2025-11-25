@@ -34,10 +34,15 @@ class User(Base):
     # Verification
     verification_token = Column(String(255), nullable=True)
     
+    # Subscription
+    subscription_tier = Column(String(20), default="free")  # free, premium, elite
+    subscription_expires = Column(DateTime(timezone=True), nullable=True)
+    
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
 
 
 class AuditLog(Base):
