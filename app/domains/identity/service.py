@@ -48,7 +48,9 @@ class IdentityService:
             whatsapp=user_data.whatsapp,
             hashed_password=hashed_password,
             verification_token=verification_token,
-            role=UserRole.USER
+            role=UserRole.USER,
+            is_active=True,  # Make users active by default for testing
+            admin_approved=True  # Auto-approve for testing
         )
         
         db.add(user)

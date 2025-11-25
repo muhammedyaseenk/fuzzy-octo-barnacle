@@ -52,7 +52,33 @@ async def send_message(
     message: MessageCreate,
     current_user: User = Depends(get_current_user)
 ):
-    """Send a message"""
+    """Send a message with AI content moderation"""
+    from app.core.content_moderator import content_moderator
+    from fastapi import HTTPException, status
+    
+    # Get recipient from conversation
+    conversation = await ChatService.get_conversation(message.conversation_id)
+    recipient_id = conversation.user2_id if conversation.user1_id == current_user.id else conversation.user1_id
+    
+    # AI moderation for ALL messages
+    moderation_result = await content_moderator.moderate_message(
+        current_user.id,
+        recipient_id,
+        message.content
+    )
+    
+    if not moderation_result["approved"]:
+        if moderation_result["requires_admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_202_ACCEPTED,
+                detail="Your message is under review by our team for safety compliance"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Message blocked for policy violation"
+            )
+    
     return await ChatService.send_message(current_user.id, message.conversation_id, message.content)
 
 

@@ -9,6 +9,16 @@ from app.domains.chat.schemas import MessageResponse, ConversationResponse
 class ChatService:
     
     @staticmethod
+    async def get_conversation(conversation_id: int):
+        """Get conversation details"""
+        async with get_pg_connection() as conn:
+            result = await conn.fetchrow(
+                "SELECT id, user1_id, user2_id FROM conversations WHERE id = $1",
+                conversation_id
+            )
+            return result
+    
+    @staticmethod
     async def get_or_create_conversation(user1_id: int, user2_id: int) -> int:
         """Get existing conversation or create new one"""
         # Check if blocked

@@ -22,7 +22,7 @@ class EngagementEvent(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     event_type = Column(SQLEnum(EventType), nullable=False, index=True)
     target_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    metadata = Column(Text)
+    event_metadata = Column(Text)
     processed = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 

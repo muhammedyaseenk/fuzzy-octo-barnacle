@@ -86,8 +86,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         return False
     
     def _validate_csrf(self, request: Request) -> bool:
+        # Skip CSRF for API endpoints (JSON content type)
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            return True
+        
+        # Skip CSRF for authenticated requests
         auth = request.headers.get("authorization", "")
-        return auth.startswith("Bearer ") or bool(request.headers.get("x-csrf-token"))
+        if auth.startswith("Bearer "):
+            return True
+            
+        # Require CSRF token for form submissions
+        return bool(request.headers.get("x-csrf-token"))
     
     def _check_rate_limit(self, ip: str) -> bool:
         minute = int(time.time() / 60)

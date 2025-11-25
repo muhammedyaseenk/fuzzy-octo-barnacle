@@ -109,3 +109,8 @@ async def health_check():
 # Mount Socket.IO for WebSocket
 from socketio import ASGIApp
 socket_app = ASGIApp(sio, app)
+
+# Add Socket.IO health endpoint
+@app.get("/socket.io/health")
+async def socketio_health():
+    return {"status": "ok", "service": "socket.io"}

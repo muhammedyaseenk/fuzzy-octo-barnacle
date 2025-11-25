@@ -11,7 +11,6 @@ services:
       POSTGRES_PASSWORD: aurum_password_2024
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database_schema.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -20,6 +19,20 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - aurum-network
+
+  # Flyway Migration
+  flyway:
+    image: flyway/flyway:latest
+    container_name: aurum-flyway
+    command: -configFiles=/flyway/conf/flyway.conf migrate
+    volumes:
+      - ./migrations:/flyway/sql
+      - ./flyway.conf:/flyway/conf/flyway.conf
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - aurum-network
 
@@ -117,6 +130,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     restart: unless-stopped
     networks:
       - aurum-network

@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN new_field VARCHAR(100);

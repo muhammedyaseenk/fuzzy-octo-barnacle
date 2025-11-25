@@ -50,6 +50,29 @@ async def chat_websocket(websocket: WebSocket, token: str):
             ws_message = WSMessage(**message_data)
             
             if ws_message.type == "message":
+                # AI moderation for ALL WebSocket messages
+                from app.core.content_moderator import content_moderator
+                
+                # Get recipient from conversation
+                conversation = await ChatService.get_conversation(ws_message.conversation_id)
+                recipient_id = conversation['user2_id'] if conversation['user1_id'] == user_id else conversation['user1_id']
+                
+                # Moderate message
+                moderation_result = await content_moderator.moderate_message(
+                    user_id,
+                    recipient_id,
+                    ws_message.content
+                )
+                
+                if not moderation_result["approved"]:
+                    # Send error back to sender
+                    error_data = {
+                        "type": "error",
+                        "message": "Message blocked" if not moderation_result["requires_admin"] else "Message under review"
+                    }
+                    await websocket.send_text(json.dumps(error_data))
+                    continue
+                
                 # Send message
                 message_response = await ChatService.send_message(
                     user_id, ws_message.conversation_id, ws_message.content
