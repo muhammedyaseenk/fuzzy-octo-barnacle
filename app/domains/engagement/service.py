@@ -6,6 +6,7 @@ from app.domains.onboarding.models import Profile
 from app.core.cache import redis_client
 from datetime import datetime, timedelta
 import json
+from app.core.cache import get_redis
 
 class EngagementService:
     
@@ -22,7 +23,9 @@ class EngagementService:
         await db.commit()
         
         # Queue for processing
-        await redis_client.lpush("engagement_queue", json.dumps({
+        # await redis_client.lpush("engagement_queue", json.dumps({
+        redis = await get_redis()
+        await redis.lpush("engagement_queue", json.dumps({
             "user_id": user_id,
             "event_type": event_type.value,
             "target_user_id": target_user_id,
