@@ -1,0 +1,28 @@
+install flutter from the git repository
+git clone https://github.com/flutter/flutter.git -b stable
+
+on powershell to check flutter where it is downloaded
+Get-ChildItem -Directory D:\auram_sharahiya -Filter flutter
+
+*****-----copy and past  the all into the powershell-----*****
+
+$flutterBin = "D:\auram_sharahiya\flutter\bin"
+$oldPath = [Environment]::GetEnvironmentVariable('Path','User')
+
+if ($oldPath -notlike "*$flutterBin*") {
+    [Environment]::SetEnvironmentVariable('Path', "$oldPath;$flutterBin", 'User')
+    Write-Output "Added Flutter to PATH."
+} else {
+    Write-Output "Flutter already on PATH."
+}
+
+# Update current session
+$env:Path += ";$flutterBin"
+
+
+
+****--------- Continue on the same powershell run the below comand too.--------****
+cd D:\auram_sharahiya\frontend\clickgo
+flutter pub get
+flutter run -d chrome
+
