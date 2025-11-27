@@ -34,12 +34,24 @@ class UserRead(BaseModel):
     is_verified: bool
     admin_approved: bool
     role: UserRole
+    profile_status: str = "pending_profile"
     mfa_enabled: bool
     created_at: datetime
     last_login: Optional[datetime]
     
     class Config:
         from_attributes = True
+
+
+class AuthMeResponse(BaseModel):
+    """Response for /auth/me endpoint"""
+    id: int
+    phone: str
+    email: Optional[str]
+    profile_status: str
+    profile_complete: bool
+    admin_approved: bool
+    role: str
 
 
 class Token(BaseModel):

@@ -98,8 +98,13 @@ class IdentityService:
                     detail="Invalid MFA code"
                 )
         
-        # Create tokens
-        token_data = {"sub": str(user.id), "role": user.role.value}
+        # Create tokens with profile status
+        token_data = {
+            "sub": str(user.id),
+            "role": user.role.value,
+            "profile_status": user.profile_status.value if user.profile_status else "pending_profile",
+            "admin_approved": user.admin_approved
+        }
         access_token = create_access_token(token_data)
         refresh_token = create_refresh_token(token_data)
         

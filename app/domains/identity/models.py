@@ -11,6 +11,13 @@ class UserRole(str, enum.Enum):
     MODERATOR = "moderator"
 
 
+class ProfileStatus(str, enum.Enum):
+    pending_profile = "pending_profile"
+    pending_admin = "pending_admin"
+    approved = "approved"
+    rejected = "rejected"
+
+
 class User(Base):
     __tablename__ = "users"
     
@@ -26,6 +33,9 @@ class User(Base):
     admin_approved = Column(Boolean, default=False)
     
     role = Column(Enum(UserRole), default=UserRole.USER)
+    
+    # Profile status for onboarding/approval flow
+    profile_status = Column(Enum(ProfileStatus, native_enum=False), default=ProfileStatus.pending_profile)
     
     # MFA
     mfa_secret = Column(String(32), nullable=True)

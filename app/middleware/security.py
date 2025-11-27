@@ -24,6 +24,24 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         self.cleanup_counter = 0
     
     async def dispatch(self, request: Request, call_next: Callable):
+        # Skip security checks for CORS preflight (OPTIONS) requests
+        # These are handled by CORSMiddleware and don't need security validation
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        
+        # Skip CSRF for auth endpoints (login, register, refresh)
+        # These need to work with mobile clients that don't handle cookies
+        auth_endpoints = ["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]
+        if any(request.url.path.startswith(endpoint) for endpoint in auth_endpoints):
+            response = await call_next(request)
+            # Still add security headers
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["X-XSS-Protection"] = "1; mode=block"
+            response.headers["Strict-Transport-Security"] = "max-age=31536000"
+            response.headers["Content-Security-Policy"] = "default-src 'self'"
+            return response
+        
         # SQL Injection Protection
         if await self._detect_sql_injection(request):
             return JSONResponse(

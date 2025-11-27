@@ -170,6 +170,18 @@ class OnboardingService:
                     onboarding_data.preferences.expectations
                 )
                 
+                # Update profile_complete flag
+                await conn.execute("""
+                    UPDATE user_profiles SET profile_complete = true, updated_at = NOW()
+                    WHERE user_id = $1
+                """, user_id)
+                
+                # Update user's profile_status to PENDING_ADMIN
+                await conn.execute("""
+                    UPDATE users SET profile_status = 'pending_admin'
+                    WHERE id = $1
+                """, user_id)
+                
                 # Add to admin verification queue
                 await conn.execute("""
                     INSERT INTO admin_verification_queue (user_id, status, submitted_at)
@@ -245,11 +257,12 @@ class OnboardingService:
                         detail="User not found"
                     )
                 
-                # Update user approval status
+                # Update user approval status and profile_status
+                new_profile_status = 'approved' if verify_data.approved else 'rejected'
                 await conn.execute("""
-                    UPDATE users SET admin_approved = $2, is_active = $2
+                    UPDATE users SET admin_approved = $2, is_active = $2, profile_status = $3
                     WHERE id = $1
-                """, user_id, verify_data.approved)
+                """, user_id, verify_data.approved, new_profile_status)
                 
                 # Update verification queue
                 status_value = "approved" if verify_data.approved else "rejected"

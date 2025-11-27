@@ -57,9 +57,16 @@ app = FastAPI(
 )
 
 # CORS
+# Configure CORS differently for development vs production
+if getattr(settings, 'ENV', 'dev') == 'dev':
+    # In development allow all origins to simplify local testing (adjust in prod)
+    allow_origins = ["*"]
+else:
+    allow_origins = settings.CORS_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

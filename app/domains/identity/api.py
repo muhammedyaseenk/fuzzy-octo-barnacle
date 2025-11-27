@@ -11,8 +11,21 @@ from app.domains.identity.schemas import (
     MFASetupResponse, MFAVerifyRequest
 )
 from app.domains.identity.service import IdentityService
+from fastapi.responses import Response
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+# Temporary handler for OPTIONS requests during development
+def add_cors_headers(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+
+@router.options("/register")
+async def options_register(response: Response):
+    add_cors_headers(response)
+    return Response(status_code=200)
 
 
 @router.post("/register", response_model=UserRead)
@@ -25,6 +38,33 @@ async def register(
     """Register a new user"""
     user = await IdentityService.create_user(db, user_data)
     return user
+
+
+@router.get("/me", response_model=dict)
+@api_rate_limit()
+async def get_current_user_info(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get current user info including profile status"""
+    # Check if user has a profile
+    from sqlalchemy import select
+    from app.domains.onboarding.models import Profile
+    
+    result = await db.execute(select(Profile).where(Profile.user_id == current_user.id))
+    profile = result.scalar_one_or_none()
+    profile_complete = profile is not None and getattr(profile, 'profile_complete', False)
+    
+    return {
+        "id": current_user.id,
+        "phone": current_user.phone,
+        "email": current_user.email,
+        "profile_status": current_user.profile_status.value if current_user.profile_status else "pending_profile",
+        "profile_complete": profile_complete,
+        "admin_approved": current_user.admin_approved,
+        "role": current_user.role.value
+    }
 
 
 @router.post("/login", response_model=Token)

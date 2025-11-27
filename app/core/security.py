@@ -105,3 +105,19 @@ def require_roles(*allowed_roles: str):
             )
         return current_user
     return role_checker
+
+
+def require_approved_user(current_user = Depends(get_current_user)):
+    """Dependency to check if user is approved for full access"""
+    from app.domains.identity.models import ProfileStatus
+    
+    if current_user.profile_status != ProfileStatus.approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "PROFILE_NOT_APPROVED",
+                "profile_status": current_user.profile_status.value if current_user.profile_status else "pending_profile",
+                "message": "Your profile is pending approval. Please complete and submit your profile for admin review."
+            }
+        )
+    return current_user

@@ -78,7 +78,8 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     environment:
-      - ENV=production
+      # - ENV=production
+      - ENV=dev  # <-- was production; dev opens CORS for local testing
       - POSTGRES_URL=postgresql+asyncpg://aurum_user:${POSTGRES_PASSWORD}@postgres:5432/aurum_db
       - REDIS_HOST=redis
       - REDIS_PASSWORD=${REDIS_PASSWORD}
